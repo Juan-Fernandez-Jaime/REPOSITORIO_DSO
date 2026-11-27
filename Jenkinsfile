@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'ETAPA 1: BUILD'
                 echo 'Verificando el codigo fuente'
-                sh 'python3 -m py_compile hola.py'
+                sh 'python3 -m py_compile hola.py app.py'
             }
         }
 
@@ -18,13 +18,25 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'ETAPA 3: ANALISIS ESTATICO'
+                script {
+                    def scannerHome = tool 'SonarScanner-DSO'
+                    withSonarQubeEnv('SonarQube-DSO') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
-                echo 'ETAPA 3: DEPLOY'
+                echo 'ETAPA 4: DEPLOY'
                 echo 'Desplegando aplicacion de prueba'
                 sh '''
                     mkdir -p despliegue
-                    cp hola.py despliegue/
+                    cp hola.py despliegue/hola.py
                     python3 despliegue/hola.py
                 '''
             }
